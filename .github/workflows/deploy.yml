@@ -24,7 +24,7 @@ jobs:
       run: |
         ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           set -e
-          cd ~/YOUR-REPO
+          cd ~/nextjs-app
           git fetch origin
           git reset --hard origin/develop
           npm install
