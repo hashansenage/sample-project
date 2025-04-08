@@ -17,14 +17,15 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-    - name: Copy files to EC2
+    - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-ip << 'EOF'
+        rsync -avz --delete --exclude=".git" ./ ec2-user@13.233.126.119:~/apps/nextjs-app
+
+        ssh -o StrictHostKeyChecking=no ec2-user@13.233.126.119 << 'EOF'
           cd ~/apps/nextjs-app
-          pm2 stop all || true
-          git pull origin main || true
           npm install
           npm run build
+          pm2 stop nextjs-app || true
           pm2 start npm --name "nextjs-app" -- start
           pm2 save
         EOF
