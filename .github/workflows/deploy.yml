@@ -1,0 +1,31 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+    - name: Deploy to EC2
+      run: |
+        rsync -avz --delete --exclude=".git" ./ ec2-user@13.233.126.119:~/apps/nextjs-app
+
+        ssh -o StrictHostKeyChecking=no ec2-user@13.233.126.119 << 'EOF'
+          cd ~/apps/nextjs-app
+          npm install
+          npm run build
+          pm2 stop nextjs-app || true
+          pm2 start npm --name "nextjs-app" -- start
+          pm2 save
+        EOF
