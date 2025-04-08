@@ -19,13 +19,25 @@ jobs:
 
     - name: Deploy to EC2
       run: |
-        rsync -avz --delete --exclude=".git" ./ ec2-user@13.233.126.119:~/apps/nextjs-app
+        echo "Deploying to EC2..."
 
+        # Sync files via rsync, skipping .git and disabling host check
+        rsync -avz --delete --exclude=".git" -e "ssh -o StrictHostKeyChecking=no" ./ ec2-user@13.233.126.119:~/apps/nextjs-app
+
+        # SSH into EC2 and build + restart the app
         ssh -o StrictHostKeyChecking=no ec2-user@13.233.126.119 << 'EOF'
           cd ~/apps/nextjs-app
+
+          echo "Installing dependencies..."
           npm install
+
+          echo "Building Next.js project..."
           npm run build
+
+          echo "Restarting app with PM2..."
           pm2 stop nextjs-app || true
           pm2 start npm --name "nextjs-app" -- start
           pm2 save
+
+          echo "✅ Deployment complete!"
         EOF
