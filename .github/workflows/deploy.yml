@@ -24,10 +24,11 @@ jobs:
       run: |
         ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           set -e
-          cd ~/nextjs-app
+          cd ~
+          cd sample-project
           git fetch origin
           git reset --hard origin/develop
           npm install
           npm run build
-          pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start
+          pm2 restart sample-project || pm2 start npm --name "sample-project" -- start
         EOF
